@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Telemetry Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; margin: 15px; min-width: 200px; }
+        button { padding: 12px 24px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .value { font-size: 2em; font-weight: bold; color: #333; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>ESP32 Sensory Monitor</h1>
+    <button onclick="connectBluetooth()">Connect ESP32 via Bluetooth</button>
+
+    <br><br>
+    <div class="card">
+        <h3>Current Weight</h3>
+        <div id="weightDisplay" class="value">0.0 kg</div>
+    </div>
+
+    <div class="card">
+        <h3>Tilt Angle</h3>
+        <div id="tiltDisplay" class="value">0.0°</div>
+    </div>
+
+    <script>
+        async function connectBluetooth() {
+            try {
+                console.log('Requesting ESP32 Bluetooth Device...');
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'ESP32-Sensors' }],
+                    optionalServices: [0x181A] // Environmental Sensing Service
+                });
+
+                console.log('Connecting to GATT Server...');
+                const server = await device.gatt.connect();
+
+                console.log('Getting Service...');
+                const service = await server.getPrimaryService(0x181A);
+
+                console.log('Getting Characteristic...');
+                const characteristic = await service.getCharacteristic(0x2A56);
+
+                // Start receiving data notifications
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', handleDataChanged);
+                console.log('Connected! Awaiting live metrics...');
+                
+            } catch (error) {
+                console.error('Bluetooth Connection Failed: ', error);
+                alert('Connection error. Make sure Bluetooth is enabled and supported by your browser.');
+            }
+        }
+
+        function handleDataChanged(event) {
+            const value = event.target.value;
+            
+            // Read 2 Floats (Little Endian, matching struct.pack('<ff') from Python)
+            const weight = value.getFloat32(0, true);
+            const tilt = value.getFloat32(4, true);
+
+            // Update UI elements
+            document.getElementById('weightDisplay').textContent = weight.toFixed(2) + " kg";
+            document.getElementById('tiltDisplay').textContent = tilt.toFixed(1) + "°";
+        }
+    </script>
+</body>
+</html>

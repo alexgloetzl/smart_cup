@@ -51,10 +51,36 @@
 
     <h1>ESP32 Cup Dashboard</h1>
 
-    <h2 style="font-size: 36px; font-weight: bold;">
-        Current Weight:
-        <span id="weight">0</span> g
-    </h2>
+    <h2 id="highestStreakDisplay"
+        style="font-size: 28px; font-weight: bold; color: purple;">
+        Highest Streak: 0
+    </h2>    
+
+    <div style="
+        display: flex;
+        gap: 80px;
+        align-items: center;
+    ">
+
+        <h2 style="
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        ">
+            Current Weight:
+            <span id="weight">0</span>g
+        </h2>
+
+        <h2 style="
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        ">
+            Tilt:
+            <span id="tilt">0</span>&deg;
+        </h2>
+
+    </div>
 
     <!-- 
     <p>Weight: <span id="weight">0</span> g</p> 
@@ -124,6 +150,8 @@
         // winning streak variables
         let drinkingStreak = 0;
 
+        let highestStreak = 0;  
+
         let hourlyDrunkAmount = 0;
 
         // let currentHour =
@@ -142,7 +170,9 @@
         const STREAK_WINDOW_MS = 10000;        
 
         const streakTable =
-            document.getElementById("streakTable");            
+            document.getElementById("streakTable");  
+            
+          
 
         async function updateData() {
 
@@ -282,6 +312,17 @@
 
                     drinkingStreak += 1;
 
+                    if (drinkingStreak > highestStreak) {
+
+                        highestStreak = drinkingStreak;
+
+                        document.getElementById(
+                            "highestStreakDisplay"
+                        ).innerText =
+                            "Highest Streak: "
+                            + highestStreak;
+                    }
+
                     addStreakRow(
                         hourlyDrunkAmount,
                         drinkingStreak
@@ -346,10 +387,22 @@
 
             timeCell.innerText = timeString;
 
+            let smiley = ":)";
+
+            if (streak >= 2) {
+                smiley = "=)";
+            }
+
+            if (streak >= 3) {
+                smiley = ":D";
+            }
+
             streakCell.innerText =
                 Math.round(amount)
                 + "ml drunk - streak "
-                + streak;
+                + streak
+                + " "
+                + smiley;
 
             streakCell.style.color = "purple";
 

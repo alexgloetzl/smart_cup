@@ -4,8 +4,8 @@ import struct
 from machine import Timer
 
 # Define the BLE UUIDs (Custom profile for your sensor telemetry)
-_ENV_SENSE_UUID = bluetooth.UUID(0x181A) # Standard Environmental Sensing service
-_SENSOR_DATA_CHAR = (bluetooth.UUID(0x2A56), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
+_ENV_SENSE_UUID = bluetooth.UUID("12345678-1234-5678-1234-56789abcdef0") # Standard Environmental Sensing service
+_SENSOR_DATA_CHAR = (bluetooth.UUID("12345678-1234-5678-1234-56789abcdef1"), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
 _SENSOR_SERVICE = (_ENV_SENSE_UUID, (_SENSOR_DATA_CHAR,),)
 
 class ESP32BLETelemetry:

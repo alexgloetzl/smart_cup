@@ -34,7 +34,7 @@
                 console.log('Requesting ESP32 Bluetooth Device...');
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'ESP32-Sensors' }],
-                    optionalServices: [0x181A] // Environmental Sensing Service
+                    optionalServices: ["12345678-1234-5678-1234-56789abcdef0"] // Environmental Sensing Service
                 });
 
                 console.log('Connecting to GATT Server...');

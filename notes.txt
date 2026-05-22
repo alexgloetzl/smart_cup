@@ -18,6 +18,13 @@ in browser:
 http://localhost:8000/
 
 
+wifi setup:
+ssid: ESP32-DASHBOARD
+pw: 12345678
+
+
+
+
 
 
 {

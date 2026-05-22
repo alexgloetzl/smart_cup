@@ -4,7 +4,8 @@ import time
 import json
 import random
 
-from machine import Pin, PWM
+from machine import Pin, PWM, I2C
+import math
 
 # -----------------------------
 # Start WiFi Access Point
@@ -35,10 +36,41 @@ green_led.freq(1000)
 blue_led.freq(1000)
 
 # -----------------------------
+# I2C setup
+# -----------------------------
+
+i2c = I2C(
+    0,
+    scl=Pin(22),
+    sda=Pin(21)
+)
+
+GY271_ADDR = 0x1E
+
+# Configure HMC5883L
+i2c.writeto_mem(
+    GY271_ADDR,
+    0x00,
+    b'\x70'
+)
+
+i2c.writeto_mem(
+    GY271_ADDR,
+    0x01,
+    b'\xA0'
+)
+
+i2c.writeto_mem(
+    GY271_ADDR,
+    0x02,
+    b'\x00'
+)
+
+# -----------------------------
 # Mock sensor values
 # -----------------------------
 mock_weight = 50.0
-mock_tilt = 45.0
+# mock_tilt = 45.0
 
 def set_color(r, g, b):
 
@@ -49,6 +81,34 @@ def set_color(r, g, b):
     red_led.duty(r)
     green_led.duty(g)
     blue_led.duty(b)
+
+def read_magnetometer():
+
+    data = i2c.readfrom_mem(
+        GY271_ADDR,
+        0x03,
+        6
+    )
+
+    x = int.from_bytes(
+        data[0:2],
+        'big',
+        signed=True
+    )
+
+    z = int.from_bytes(
+        data[2:4],
+        'big',
+        signed=True
+    )
+
+    y = int.from_bytes(
+        data[4:6],
+        'big',
+        signed=True
+    )
+
+    return x, y, z
 
 # -----------------------------
 # Load HTML file
@@ -77,54 +137,77 @@ while True:
     drunk_water = random.choice([20, 50])
     if sample < 0.7:
         mock_weight -= drunk_water
+        mock_weight = max(mock_weight, 0)
     else:
         mock_weight += 5*drunk_water
 
-    mock_tilt = 30.0
-    alert = random.uniform(0,1)
-    if alert < 0.2:
-        # -----------------------------
-        # Smooth RGB tilt feedback
-        # -----------------------------
+    # mock_tilt = 30.0
+    # alert = random.uniform(0,1)
+    # if alert < 0.2:
+    #   ...
 
-        MIN_TILT = 30
-        MAX_TILT = 50
+    # -----------------------------
+    # Read GY271 tilt estimate
+    # -----------------------------
 
-        # Clamp tilt
-        tilt_clamped = max(
-            MIN_TILT,
-            min(mock_tilt, MAX_TILT)
+    x, y, z = read_magnetometer()
+
+    # Simple orientation estimate
+    mock_tilt = abs(
+        math.degrees(
+            math.atan2(y, z)
         )
+    )
 
-        # Normalize:
-        # 30° -> 0.0
-        # 50° -> 1.0
+    print(
+        "x:", x,
+        "y:", y,
+        "z:", z,
+        "tilt:", mock_tilt
+    )    
 
-        progress = (
-            (tilt_clamped - MIN_TILT)
-            / (MAX_TILT - MIN_TILT)
-        )
+    # -----------------------------
+    # Smooth RGB tilt feedback
+    # -----------------------------
 
-        # Orange -> Dark Red transition
-        #
-        # Orange:
-        #   R = 1023
-        #   G = 500
-        #
-        # Dark red:
-        #   R = 1023
-        #   G = 0
+    MIN_TILT = 30
+    MAX_TILT = 50
 
-        red = 1023
+    # Clamp tilt
+    tilt_clamped = max(
+        MIN_TILT,
+        min(mock_tilt, MAX_TILT)
+    )
 
-        green = int(
-            500 * (1.0 - progress)
-        )
+    # Normalize:
+    # 30° -> 0.0
+    # 50° -> 1.0
 
-        blue = 0
+    progress = (
+        (tilt_clamped - MIN_TILT)
+        / (MAX_TILT - MIN_TILT)
+    )
 
-        set_color(red, green, blue)
-        print(f"red: {red}, green: {green}, blue: {blue}")
+    # Orange -> Dark Red transition
+    #
+    # Orange:
+    #   R = 1023
+    #   G = 500
+    #
+    # Dark red:
+    #   R = 1023
+    #   G = 0
+
+    red = 1023
+
+    green = int(
+        500 * (1.0 - progress)
+    )
+
+    blue = 0
+
+    set_color(red, green, blue)
+    print(f"red: {red}, green: {green}, blue: {blue}")
 
     # Wait for client
     conn, addr = s.accept()

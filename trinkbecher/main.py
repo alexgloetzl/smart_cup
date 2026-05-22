@@ -4,6 +4,8 @@ import time
 import json
 import random
 
+from machine import Pin, PWM
+
 # -----------------------------
 # Start WiFi Access Point
 # -----------------------------
@@ -21,10 +23,32 @@ print("AP started")
 print(ap.ifconfig())
 
 # -----------------------------
+# RGB LED setup
+# -----------------------------
+
+red_led = PWM(Pin(25))
+green_led = PWM(Pin(26))
+blue_led = PWM(Pin(13))
+
+red_led.freq(1000)
+green_led.freq(1000)
+blue_led.freq(1000)
+
+# -----------------------------
 # Mock sensor values
 # -----------------------------
 mock_weight = 50.0
 mock_tilt = 45.0
+
+def set_color(r, g, b):
+
+    # ESP32 PWM range:
+    # 0 = ON
+    # 1023 = OFF
+
+    red_led.duty(r)
+    green_led.duty(g)
+    blue_led.duty(b)
 
 # -----------------------------
 # Load HTML file
@@ -56,10 +80,51 @@ while True:
     else:
         mock_weight += 5*drunk_water
 
-    mock_tilt = 10.0
+    mock_tilt = 30.0
     alert = random.uniform(0,1)
     if alert < 0.2:
-        mock_tilt = 50.0
+        # -----------------------------
+        # Smooth RGB tilt feedback
+        # -----------------------------
+
+        MIN_TILT = 30
+        MAX_TILT = 50
+
+        # Clamp tilt
+        tilt_clamped = max(
+            MIN_TILT,
+            min(mock_tilt, MAX_TILT)
+        )
+
+        # Normalize:
+        # 30° -> 0.0
+        # 50° -> 1.0
+
+        progress = (
+            (tilt_clamped - MIN_TILT)
+            / (MAX_TILT - MIN_TILT)
+        )
+
+        # Orange -> Dark Red transition
+        #
+        # Orange:
+        #   R = 1023
+        #   G = 500
+        #
+        # Dark red:
+        #   R = 1023
+        #   G = 0
+
+        red = 1023
+
+        green = int(
+            500 * (1.0 - progress)
+        )
+
+        blue = 0
+
+        set_color(red, green, blue)
+        print(f"red: {red}, green: {green}, blue: {blue}")
 
     # Wait for client
     conn, addr = s.accept()

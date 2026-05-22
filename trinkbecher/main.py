@@ -2,6 +2,7 @@ import network
 import socket
 import time
 import json
+import random
 
 # -----------------------------
 # Start WiFi Access Point
@@ -47,10 +48,15 @@ print("Server listening on port 80")
 while True:
 
     # Update mock sensor values
-    mock_weight += 1.0
+    sample = random.uniform(0, 1)
+    if sample < 0.5:
+        mock_weight -= 5.0
+    else:
+        mock_weight += 5.0
+
     mock_tilt -= 1.0
 
-    if mock_tilt < 0:
+    if mock_weight > 0:
         mock_tilt = 45
 
     # Wait for client
@@ -60,7 +66,7 @@ while True:
 
     # request = conn.recv(1024).decode()
     raw_request = conn.recv(1024)
-    print(raw_request)
+    # print(raw_request)
 
     request = raw_request.decode("utf-8", "ignore")    
 
@@ -73,6 +79,8 @@ while True:
             "weight": mock_weight,
             "tilt": mock_tilt
         }
+
+        print(f"mock weight: {mock_weight}, mock tilt: {mock_tilt}")
 
         json_data = json.dumps(data)
 

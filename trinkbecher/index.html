@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>ESP32 Cup Dashboard</title>
 </head>
 
 <body>
+
     <h1>ESP32 Cup Dashboard</h1>
 
     <p>Weight: <span id="weight">0</span> g</p>
     <p>Tilt: <span id="tilt">0</span> °</p>
 
+    <canvas id="graph" width="400" height="200"
+        style="border:1px solid black;">
+    </canvas>
+
     <script>
+
+        const weightHistory = [];
+
+        const canvas = document.getElementById("graph");
+        const ctx = canvas.getContext("2d");
+
         async function updateData() {
 
             const response = await fetch("/data");
@@ -18,11 +30,50 @@
 
             document.getElementById("weight").innerText = data.weight;
             document.getElementById("tilt").innerText = data.tilt;
+
+            // Store weight history
+            weightHistory.push(data.weight);
+
+            // Keep only last 50 values
+            if (weightHistory.length > 50) {
+                weightHistory.shift();
+            }
+
+            drawGraph();
+        }
+
+        function drawGraph() {
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (weightHistory.length < 2) {
+                return;
+            }
+
+            const maxWeight = Math.max(...weightHistory);
+
+            for (let i = 1; i < weightHistory.length; i++) {
+
+                const x1 = (i - 1) * (canvas.width / 50);
+                const y1 = canvas.height -
+                    (weightHistory[i - 1] / maxWeight) * canvas.height;
+
+                const x2 = i * (canvas.width / 50);
+                const y2 = canvas.height -
+                    (weightHistory[i] / maxWeight) * canvas.height;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
         }
 
         setInterval(updateData, 1000);
 
         updateData();
+
     </script>
+
 </body>
 </html>

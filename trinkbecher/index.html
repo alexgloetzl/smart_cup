@@ -100,6 +100,10 @@
             Daily Goal Progress
         </h2>
 
+        <h2 id="goalAmountText">
+            0ml / 3000ml drunk
+        </h2>        
+
         <div id="goalBarsContainer"></div>
 
     </div>
@@ -508,6 +512,19 @@
 
             for (const goalBar of goalBars) {
 
+                const currentGoalBar =
+                    goalBars[
+                        goalBars.length - 1
+                    ];
+
+                document.getElementById(
+                    "goalAmountText"
+                ).innerText =
+                    Math.round(currentGoalBar.amount)
+                    + "ml / "
+                    + GOAL_TARGET
+                    + "ml drunk";                
+
                 const wrapper =
                     document.createElement("div");
 
@@ -570,7 +587,7 @@
 
                 counter.innerText =
                     goalBar.completedWindows
-                    + "/24";
+                    + " hours / 24 elapsed";
 
                 wrapper.appendChild(counter);
 

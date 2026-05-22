@@ -1,3 +1,4 @@
+# this at least showed the running updated integers
 import bluetooth
 import time
 import struct

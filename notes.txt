@@ -40,6 +40,14 @@ works but only updates when i press refresh. the bluetooth setup did not show up
 - add daily goal
 
 
+
+präsi:
+nicht zu lange mit einführung aufhalten
+juroren wissen alles schon von der "challenge" webseite
+gerne auch die mitgebrachten, vorgegebenen becher transparent vorzeigen
+
+
+
 {
     "address": "COM3",
     "open_on_start": true
@@ -59,3 +67,43 @@ index.html dashboard UI
 eichung der wiege:
 170 g in echt entspricht 125 g auf dem computer
 
+
+
+
+FIX:
+5. Your socket server is blocking
+
+Currently:
+
+conn, addr = s.accept()
+
+blocks forever until a browser connects.
+
+This is okay for your hackathon/demo setup.
+
+You only need async/non-blocking later if:
+
+sensors update independently
+multiple users connect
+real-time streaming is needed
+
+For now:
+
+your current architecture is fine
+simple = good
+
+
+->
+add s.settimeout(0.1) after s.listen(5):
+s.listen(5)
+s.settimeout(0.1)
+
+replace:
+conn, addr = s.accept()
+
+with
+
+try:
+    conn, addr = s.accept()
+except OSError:
+    conn = None

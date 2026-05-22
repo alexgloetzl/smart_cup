@@ -45,25 +45,16 @@ i2c = I2C(
     sda=Pin(21)
 )
 
-GY271_ADDR = 0x1E
+# print(i2c.scan())
 
-# Configure HMC5883L
+# QMC5883L, not HMC5883L
+GY271_ADDR = 0x0D
+
+# Configure QMC5883L
 i2c.writeto_mem(
     GY271_ADDR,
-    0x00,
-    b'\x70'
-)
-
-i2c.writeto_mem(
-    GY271_ADDR,
-    0x01,
-    b'\xA0'
-)
-
-i2c.writeto_mem(
-    GY271_ADDR,
-    0x02,
-    b'\x00'
+    0x09,
+    b'\x1D'
 )
 
 # -----------------------------
@@ -82,30 +73,32 @@ def set_color(r, g, b):
     green_led.duty(g)
     blue_led.duty(b)
 
+def to_signed(val):
+
+    if val > 32767:
+        val -= 65536
+
+    return val
+
+
 def read_magnetometer():
 
     data = i2c.readfrom_mem(
         GY271_ADDR,
-        0x03,
+        0x00,
         6
     )
 
-    x = int.from_bytes(
-        data[0:2],
-        'big',
-        signed=True
+    x = to_signed(
+        int.from_bytes(data[0:2], 'little')
     )
 
-    z = int.from_bytes(
-        data[2:4],
-        'big',
-        signed=True
+    y = to_signed(
+        int.from_bytes(data[2:4], 'little')
     )
 
-    y = int.from_bytes(
-        data[4:6],
-        'big',
-        signed=True
+    z = to_signed(
+        int.from_bytes(data[4:6], 'little')
     )
 
     return x, y, z
@@ -158,7 +151,6 @@ while True:
             math.atan2(y, z)
         )
     )
-
     print(
         "x:", x,
         "y:", y,

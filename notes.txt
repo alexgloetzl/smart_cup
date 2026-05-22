@@ -21,9 +21,9 @@ http://localhost:8000/
 wifi setup:
 ssid: ESP32-DASHBOARD
 pw: 12345678
+in browser: http://192.168.4.1
 
-
-
+works but only updates when i press refresh. the bluetooth setup did not show updated numbers because desktop pc did not have bluetooth. but could try again with laptop that has bluetooth as well
 
 
 

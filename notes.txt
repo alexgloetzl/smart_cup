@@ -36,7 +36,8 @@ works but only updates when i press refresh. the bluetooth setup did not show up
 - add statistics: how much was drunk in the last 10 seconds. (absolute values). maybe also save the time when it was drunk
         in a table
 - add a high-score-streak:
-
+- add reminder
+- add daily goal
 
 
 {

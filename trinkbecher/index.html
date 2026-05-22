@@ -167,7 +167,9 @@
             STREAK_THRESHOLD +
             "ml / 10s)";
 
-        const STREAK_WINDOW_MS = 10000;        
+        const STREAK_WINDOW_MS = 10000;     
+        
+        const MAX_TABLE_ROWS = 15;
 
         const streakTable =
             document.getElementById("streakTable");  
@@ -183,8 +185,8 @@
             document.getElementById("weight").innerText =
                 data.weight;
 
-            // document.getElementById("tilt").innerText =
-            //    data.tilt;
+            document.getElementById("tilt").innerText =
+               data.tilt;
 
             // -----------------------------
             // Drinking mode
@@ -366,6 +368,8 @@
             waterCell.style.color = color;
 
             waterCell.style.fontWeight = "bold";
+
+            limitTableRows(alertTable);
         }
 
         function addStreakRow(amount, streak) {
@@ -397,6 +401,10 @@
                 smiley = ":D";
             }
 
+            if (streak >= 4) {
+                smiley = ":D :D";
+            }
+
             streakCell.innerText =
                 Math.round(amount)
                 + "ml drunk - streak "
@@ -407,6 +415,20 @@
             streakCell.style.color = "purple";
 
             streakCell.style.fontWeight = "bold";
+
+            limitTableRows(streakTable);
+        }        
+
+        function limitTableRows(table) {
+
+            // Keep header row + latest rows
+            while (
+                table.rows.length >
+                MAX_TABLE_ROWS + 1
+            ) {
+
+                table.deleteRow(1);
+            }
         }        
 
         function drawGraph() {

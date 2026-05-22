@@ -93,6 +93,40 @@
         height="450">
     </canvas>
 
+
+    <div style="margin-top: 20px;">
+
+        <h2 id="goalText">
+            Daily Goal: 0 / 1000 ml
+        </h2>
+
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        ">
+
+            <pre id="goalBar"
+                style="
+                    font-size: 28px;
+                    font-weight: bold;
+                    margin: 0;
+                ">
+    [--------------------]
+            </pre>
+
+            <h2 id="goalMessage"
+                style="
+                    color: green;
+                    margin: 0;
+                ">
+            </h2>
+
+        </div>
+
+    </div>
+
+
     <div class="tables-container">
 
         <div>
@@ -159,11 +193,10 @@
 
         let streakWindowStart =
             Date.now();
-
         const STREAK_THRESHOLD = 200;
 
         document.getElementById("streakHeader").innerText =
-            "Drinking Streak (" +
+            "Hourly Drinking Streak (" +
             STREAK_THRESHOLD +
             "ml / 10s)";
 
@@ -174,6 +207,12 @@
         const streakTable =
             document.getElementById("streakTable");  
             
+
+        let goalAmount = 0;
+        const GOAL_TARGET = 3000;
+        const GOAL_WINDOW_MS = 240000;
+        let goalWindowStart = Date.now();
+
           
 
         async function updateData() {
@@ -254,6 +293,8 @@
 
                 // Water drunk
                 else if (diff < -WEIGHT_CHANGE_THRESHOLD) {
+
+                    goalAmount += Math.abs(diff);
 
                     hourlyDrunkAmount += Math.abs(diff);
                     addAlertRow(
@@ -340,6 +381,65 @@
 
                 streakWindowStart = nowMs;
             }            
+
+
+            // -----------------------------
+            // Daily goal loading bar
+            // -----------------------------
+
+            const goalProgress =
+                Math.min(goalAmount / GOAL_TARGET, 1);
+
+            const totalBars = 20;
+
+            const filledBars =
+                Math.round(goalProgress * totalBars);
+
+            const emptyBars =
+                totalBars - filledBars;
+
+            const asciiBar =
+                "[" +
+                "#".repeat(filledBars) +
+                "-".repeat(emptyBars) +
+                "]";
+
+            document.getElementById("goalBar").innerText =
+                asciiBar;
+
+            document.getElementById("goalText").innerText =
+                "Daily Goal: "
+                + Math.round(goalAmount)
+                + " / "
+                + GOAL_TARGET
+                + " ml";
+
+            // Goal reached message
+            if (goalAmount >= GOAL_TARGET) {
+
+                document.getElementById(
+                    "goalMessage"
+                ).innerText =
+                    "GOAL REACHED! :)";
+
+            } else {
+
+                document.getElementById(
+                    "goalMessage"
+                ).innerText = "";
+            }
+
+            // Reset every 240 seconds
+            if (
+                Date.now() - goalWindowStart
+                >= GOAL_WINDOW_MS
+            ) {
+
+                goalAmount = 0;
+
+                goalWindowStart = Date.now();
+            }
+
 
             drawGraph();
         }

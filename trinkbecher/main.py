@@ -55,10 +55,10 @@ while True:
     else:
         mock_weight += 5.0
 
-    mock_tilt -= 1.0
-
-    if mock_weight > 0:
-        mock_tilt = 45
+    mock_tilt = 10.0
+    alert = random.uniform(0,1)
+    if alert < 0.2:
+        mock_tilt = 50.0
 
     # Wait for client
     conn, addr = s.accept()

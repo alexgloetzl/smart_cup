@@ -3,6 +3,42 @@
 
 <head>
     <title>ESP32 Cup Dashboard</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+        }
+
+        #graph {
+            border: 3px solid black;
+        }
+
+        .alert {
+            animation: blink 1s infinite;
+            border: 6px solid red !important;
+        }
+
+        @keyframes blink {
+            50% {
+                border-color: transparent;
+            }
+        }
+
+        table {
+            margin-top: 30px;
+            border-collapse: collapse;
+            width: 400px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+
+    </style>
+
 </head>
 
 <body>
@@ -10,14 +46,25 @@
     <h1>ESP32 Cup Dashboard</h1>
 
     <p>Weight: <span id="weight">0</span> g</p>
+
     <p>Tilt: <span id="tilt">0</span> °</p>
 
     <canvas
         id="graph"
-        width="800"
-        height="400"
-        style="border:1px solid black;">
+        width="900"
+        height="450">
     </canvas>
+
+    <h2>Alerts</h2>
+
+    <table id="alertTable">
+
+        <tr>
+            <th>Time</th>
+            <th>Water</th>
+        </tr>
+
+    </table>
 
     <script>
 
@@ -25,50 +72,108 @@
 
         let lastStableWeight = 0;
 
+        let alertActive = false;
+
         const canvas = document.getElementById("graph");
+
         const ctx = canvas.getContext("2d");
+
+        const alertTable =
+            document.getElementById("alertTable");
 
         async function updateData() {
 
             const response = await fetch("/data");
+
             const data = await response.json();
 
-            document.getElementById("weight").innerText = data.weight;
-            document.getElementById("tilt").innerText = data.tilt;
+            document.getElementById("weight").innerText =
+                data.weight;
+
+            document.getElementById("tilt").innerText =
+                data.tilt;
+
+            // -----------------------------
+            // Drinking mode
+            // -----------------------------
 
             let graphWeight;
 
-            // Drinking mode detection
             if (data.weight <= 0) {
 
-                // Keep previous stable weight
                 graphWeight = lastStableWeight;
 
             } else {
 
-                // Normal mode
                 graphWeight = data.weight;
 
-                // Save latest stable value
                 lastStableWeight = data.weight;
             }
 
-            // Add graph value
             weightHistory.push(graphWeight);
 
-            // Keep only latest 50 values
             if (weightHistory.length > 50) {
                 weightHistory.shift();
+            }
+
+            // -----------------------------
+            // Tilt alert
+            // -----------------------------
+
+            if (data.tilt > 45) {
+
+                // Red blinking border
+                canvas.classList.add("alert");
+
+                // Add alert only once
+                if (!alertActive) {
+
+                    alertActive = true;
+
+                    addAlertRow();
+                }
+
+            } else {
+
+                canvas.classList.remove("alert");
+
+                alertActive = false;
             }
 
             drawGraph();
         }
 
+        function addAlertRow() {
+
+            const row = alertTable.insertRow(-1);
+
+            const timeCell = row.insertCell(0);
+
+            const waterCell = row.insertCell(1);
+
+            const now = new Date();
+
+            const timeString =
+                now.getHours().toString().padStart(2, '0')
+                + ":"
+                + now.getMinutes().toString().padStart(2, '0')
+                + ":"
+                + now.getSeconds().toString().padStart(2, '0');
+
+            timeCell.innerText = timeString;
+
+            waterCell.innerText = "alert";
+        }
+
         function drawGraph() {
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
-            // Graph margins
             const marginLeft = 80;
             const marginBottom = 60;
             const marginTop = 20;
@@ -80,14 +185,16 @@
             const graphHeight =
                 canvas.height - marginTop - marginBottom;
 
-            // Draw axes
+            // Axes
             ctx.beginPath();
 
-            // Y-axis
             ctx.moveTo(marginLeft, marginTop);
-            ctx.lineTo(marginLeft, canvas.height - marginBottom);
 
-            // X-axis
+            ctx.lineTo(
+                marginLeft,
+                canvas.height - marginBottom
+            );
+
             ctx.lineTo(
                 canvas.width - marginRight,
                 canvas.height - marginBottom
@@ -95,17 +202,15 @@
 
             ctx.stroke();
 
-            // Axis labels
+            // Labels
             ctx.font = "20px Arial";
 
-            // X-axis label
             ctx.fillText(
                 "Time",
                 canvas.width / 2,
                 canvas.height - 15
             );
 
-            // Y-axis label
             ctx.save();
 
             ctx.translate(25, canvas.height / 2);
@@ -121,12 +226,16 @@
             }
 
             // Dynamic scaling
-            const maxWeight = Math.max(...weightHistory);
-            const minWeight = Math.min(...weightHistory);
+            const maxWeight =
+                Math.max(...weightHistory);
 
-            const range = maxWeight - minWeight || 1;
+            const minWeight =
+                Math.min(...weightHistory);
 
-            // Draw graph line
+            const range =
+                maxWeight - minWeight || 1;
+
+            // Draw line
             for (let i = 1; i < weightHistory.length; i++) {
 
                 const x1 =
@@ -135,8 +244,8 @@
 
                 const y1 =
                     canvas.height - marginBottom -
-                    ((weightHistory[i - 1] - minWeight) / range)
-                    * graphHeight;
+                    ((weightHistory[i - 1] - minWeight)
+                    / range) * graphHeight;
 
                 const x2 =
                     marginLeft +
@@ -144,12 +253,13 @@
 
                 const y2 =
                     canvas.height - marginBottom -
-                    ((weightHistory[i] - minWeight) / range)
-                    * graphHeight;
+                    ((weightHistory[i] - minWeight)
+                    / range) * graphHeight;
 
                 ctx.beginPath();
 
                 ctx.moveTo(x1, y1);
+
                 ctx.lineTo(x2, y2);
 
                 ctx.stroke();

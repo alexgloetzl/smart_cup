@@ -28,13 +28,14 @@ in browser: http://192.168.4.1
 works but only updates when i press refresh. the bluetooth setup did not show updated numbers because desktop pc did not have bluetooth. but could try again with laptop that has bluetooth as well
 
 # TODO:
+- i always need to press the reset button. is it possible without?
 - fix password access
 - if weight == 0: the weight should stay constant to the last know value
         because weight == 0 could mean that currently cup is used for drinking
 - if tilt is bigger than a certain value, make a red blinking frame around the graph
 - add statistics: how much was drunk in the last 10 seconds. (absolute values). maybe also save the time when it was drunk
         in a table
-
+- add a high-score-streak:
 
 
 

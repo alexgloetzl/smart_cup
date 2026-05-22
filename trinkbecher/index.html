@@ -96,33 +96,11 @@
 
     <div style="margin-top: 20px;">
 
-        <h2 id="goalText">
-            Daily Goal: 0 / 1000 ml
+        <h2>
+            Daily Goal Progress
         </h2>
 
-        <div style="
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        ">
-
-            <pre id="goalBar"
-                style="
-                    font-size: 28px;
-                    font-weight: bold;
-                    margin: 0;
-                ">
-    [--------------------]
-            </pre>
-
-            <h2 id="goalMessage"
-                style="
-                    color: green;
-                    margin: 0;
-                ">
-            </h2>
-
-        </div>
+        <div id="goalBarsContainer"></div>
 
     </div>
 
@@ -208,10 +186,17 @@
             document.getElementById("streakTable");  
             
 
-        let goalAmount = 0;
         const GOAL_TARGET = 3000;
-        const GOAL_WINDOW_MS = 240000;
-        let goalWindowStart = Date.now();
+
+        const GOAL_WINDOW_MS = 10000;
+        const GOAL_TOTAL_WINDOWS = 24;
+        let goalBars = [
+            {
+                amount: 0,
+                completedWindows: 0,
+                startTime: Date.now()
+            }
+        ];
 
           
 
@@ -294,7 +279,9 @@
                 // Water drunk
                 else if (diff < -WEIGHT_CHANGE_THRESHOLD) {
 
-                    goalAmount += Math.abs(diff);
+                    goalBars[
+                        goalBars.length - 1
+                    ].amount += Math.abs(diff);
 
                     hourlyDrunkAmount += Math.abs(diff);
                     addAlertRow(
@@ -384,60 +371,39 @@
 
 
             // -----------------------------
-            // Daily goal loading bar
+            // Goal bar logic
             // -----------------------------
 
-            const goalProgress =
-                Math.min(goalAmount / GOAL_TARGET, 1);
+            renderGoalBars();
 
-            const totalBars = 20;
+            const currentGoalBar =
+                goalBars[
+                    goalBars.length - 1
+                ];
 
-            const filledBars =
-                Math.round(goalProgress * totalBars);
-
-            const emptyBars =
-                totalBars - filledBars;
-
-            const asciiBar =
-                "[" +
-                "#".repeat(filledBars) +
-                "-".repeat(emptyBars) +
-                "]";
-
-            document.getElementById("goalBar").innerText =
-                asciiBar;
-
-            document.getElementById("goalText").innerText =
-                "Daily Goal: "
-                + Math.round(goalAmount)
-                + " / "
-                + GOAL_TARGET
-                + " ml";
-
-            // Goal reached message
-            if (goalAmount >= GOAL_TARGET) {
-
-                document.getElementById(
-                    "goalMessage"
-                ).innerText =
-                    "GOAL REACHED! :)";
-
-            } else {
-
-                document.getElementById(
-                    "goalMessage"
-                ).innerText = "";
-            }
-
-            // Reset every 240 seconds
             if (
-                Date.now() - goalWindowStart
+                Date.now()
+                - currentGoalBar.startTime
                 >= GOAL_WINDOW_MS
             ) {
 
-                goalAmount = 0;
+                currentGoalBar.completedWindows += 1;
 
-                goalWindowStart = Date.now();
+                currentGoalBar.startTime =
+                    Date.now();
+
+                // Full 24-window cycle finished
+                if (
+                    currentGoalBar.completedWindows
+                    >= GOAL_TOTAL_WINDOWS
+                ) {
+
+                    goalBars.push({
+                        amount: 0,
+                        completedWindows: 0,
+                        startTime: Date.now()
+                    });
+                }
             }
 
 
@@ -528,6 +494,109 @@
             ) {
 
                 table.deleteRow(1);
+            }
+        }    
+        
+        function renderGoalBars() {
+
+            const container =
+                document.getElementById(
+                    "goalBarsContainer"
+                );
+
+            container.innerHTML = "";
+
+            for (const goalBar of goalBars) {
+
+                const wrapper =
+                    document.createElement("div");
+
+                wrapper.style.display = "flex";
+
+                wrapper.style.alignItems = "center";
+
+                wrapper.style.gap = "20px";
+
+                wrapper.style.marginBottom = "10px";
+
+                // -----------------------------
+                // ASCII loading bar
+                // -----------------------------
+
+                const progress =
+                    Math.min(
+                        goalBar.amount / GOAL_TARGET,
+                        1
+                    );
+
+                const totalBars = 20;
+
+                const filledBars =
+                    Math.round(progress * totalBars);
+
+                const asciiBar =
+                    "[" +
+                    "#".repeat(filledBars) +
+                    "-".repeat(
+                        totalBars - filledBars
+                    ) +
+                    "]";
+
+                const bar =
+                    document.createElement("pre");
+
+                bar.style.fontSize = "24px";
+
+                bar.style.fontWeight = "bold";
+
+                bar.style.margin = "0";
+
+                bar.innerText = asciiBar;
+
+                wrapper.appendChild(bar);
+
+                // -----------------------------
+                // Window counter
+                // -----------------------------
+
+                const counter =
+                    document.createElement("div");
+
+                counter.style.fontWeight =
+                    "bold";
+
+                counter.style.fontSize =
+                    "20px";
+
+                counter.innerText =
+                    goalBar.completedWindows
+                    + "/24";
+
+                wrapper.appendChild(counter);
+
+                // -----------------------------
+                // Goal reached message
+                // -----------------------------
+
+                if (
+                    goalBar.amount >= GOAL_TARGET
+                ) {
+
+                    const msg =
+                        document.createElement("div");
+
+                    msg.style.color = "green";
+
+                    msg.style.fontWeight =
+                        "bold";
+
+                    msg.innerText =
+                        "GOAL REACHED! :)";
+
+                    wrapper.appendChild(msg);
+                }
+
+                container.appendChild(wrapper);
             }
         }        
 

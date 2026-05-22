@@ -52,3 +52,9 @@ Bluetooth LE notifications
 Chrome Web Bluetooth API
         ↓
 index.html dashboard UI
+
+
+
+eichung der wiege:
+170 g in echt entspricht 125 g auf dem computer
+

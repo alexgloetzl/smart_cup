@@ -37,6 +37,12 @@
             text-align: left;
         }
 
+        .tables-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }        
+
     </style>
 
 </head>
@@ -45,9 +51,15 @@
 
     <h1>ESP32 Cup Dashboard</h1>
 
-    <p>Weight: <span id="weight">0</span> g</p>
+    <h2 style="font-size: 36px; font-weight: bold;">
+        Current Weight:
+        <span id="weight">0</span> g
+    </h2>
 
-    <p>Tilt: <span id="tilt">0</span> °</p>
+    <!-- 
+    <p>Weight: <span id="weight">0</span> g</p> 
+    <p>Tilt: <span id="tilt">0</span> °</p> 
+    -->
 
     <canvas
         id="graph"
@@ -55,18 +67,46 @@
         height="450">
     </canvas>
 
-    <h2>Alerts</h2>
+    <div class="tables-container">
 
-    <table id="alertTable">
+        <div>
 
-        <tr>
-            <th>Time</th>
-            <th>Water</th>
-        </tr>
+            <h2>Water Events</h2>
 
-    </table>
+            <table id="alertTable">
+
+                <tr>
+                    <th>Time</th>
+                    <th>Water</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+        <div>
+
+            <!-- <h2>Drinking Streak</h2>-->
+            <h2 id="streakHeader"></h2>
+
+            <table id="streakTable">
+
+                <tr>
+                    <th>Time</th>
+                    <th>Drinking Streak</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>   
 
     <script>
+
+        let previousWeight = null;
+
+        const WEIGHT_CHANGE_THRESHOLD = 20;
 
         const weightHistory = [];
 
@@ -81,6 +121,29 @@
         const alertTable =
             document.getElementById("alertTable");
 
+        // winning streak variables
+        let drinkingStreak = 0;
+
+        let hourlyDrunkAmount = 0;
+
+        // let currentHour =
+        //     new Date().getHours();
+
+        let streakWindowStart =
+            Date.now();
+
+        const STREAK_THRESHOLD = 200;
+
+        document.getElementById("streakHeader").innerText =
+            "Drinking Streak (" +
+            STREAK_THRESHOLD +
+            "ml / 10s)";
+
+        const STREAK_WINDOW_MS = 10000;        
+
+        const streakTable =
+            document.getElementById("streakTable");            
+
         async function updateData() {
 
             const response = await fetch("/data");
@@ -90,8 +153,8 @@
             document.getElementById("weight").innerText =
                 data.weight;
 
-            document.getElementById("tilt").innerText =
-                data.tilt;
+            // document.getElementById("tilt").innerText =
+            //    data.tilt;
 
             // -----------------------------
             // Drinking mode
@@ -130,7 +193,7 @@
 
                     alertActive = true;
 
-                    addAlertRow();
+                    addAlertRow("alert", "red");
                 }
 
             } else {
@@ -140,10 +203,105 @@
                 alertActive = false;
             }
 
+            // -----------------------------
+            // Water change detection
+            // -----------------------------
+
+            if (previousWeight !== null) {
+
+                const diff = data.weight - previousWeight;
+
+                // Water added
+                if (diff > WEIGHT_CHANGE_THRESHOLD) {
+
+                    addAlertRow(
+                        Math.round(diff) + "g added",
+                        "blue"
+                    );
+                }
+
+                // Water drunk
+                else if (diff < -WEIGHT_CHANGE_THRESHOLD) {
+
+                    hourlyDrunkAmount += Math.abs(diff);
+                    addAlertRow(
+                        Math.round(Math.abs(diff)) + "g drunk",
+                        "green"
+                    );
+                }
+            }
+
+            previousWeight = data.weight;    
+            
+            // -----------------------------
+            // Hourly streak logic
+            // -----------------------------
+
+            // const now = new Date();
+
+            // const hourNow = now.getHours();
+
+            // if (hourNow !== currentHour) {
+
+            //     // Successful hour
+            //     if (hourlyDrunkAmount >= STREAK_THRESHOLD) {
+
+            //         drinkingStreak += 1;
+
+            //         addStreakRow(
+            //             hourlyDrunkAmount,
+            //             drinkingStreak
+            //         );
+
+            //     } else {
+
+            //         // Reset streak
+            //         drinkingStreak = 0;
+            //     }
+
+            //     // Reset for next hour
+            //     hourlyDrunkAmount = 0;
+
+            //     currentHour = hourNow;
+            // } 
+            
+
+            // -----------------------------
+            // 10-second streak logic
+            // -----------------------------
+
+            const nowMs = Date.now();
+
+            if (
+                nowMs - streakWindowStart
+                >= STREAK_WINDOW_MS
+            ) {
+
+                // Successful streak window
+                if (hourlyDrunkAmount >= STREAK_THRESHOLD) {
+
+                    drinkingStreak += 1;
+
+                    addStreakRow(
+                        hourlyDrunkAmount,
+                        drinkingStreak
+                    );
+
+                } else {
+
+                    drinkingStreak = 0;
+                }
+
+                // Reset window
+                hourlyDrunkAmount = 0;
+
+                streakWindowStart = nowMs;
+            }            
+
             drawGraph();
         }
 
-        function addAlertRow() {
+        function addAlertRow(message, color) {
 
             const row = alertTable.insertRow(-1);
 
@@ -162,8 +320,41 @@
 
             timeCell.innerText = timeString;
 
-            waterCell.innerText = "alert";
+            waterCell.innerText = message;
+
+            waterCell.style.color = color;
+
+            waterCell.style.fontWeight = "bold";
         }
+
+        function addStreakRow(amount, streak) {
+
+            const row = streakTable.insertRow(-1);
+
+            const timeCell = row.insertCell(0);
+
+            const streakCell = row.insertCell(1);
+
+            const now = new Date();
+
+            const timeString =
+                now.getHours().toString().padStart(2, '0')
+                + ":"
+                + now.getMinutes().toString().padStart(2, '0')
+                + ":"
+                + now.getSeconds().toString().padStart(2, '0');
+
+            timeCell.innerText = timeString;
+
+            streakCell.innerText =
+                Math.round(amount)
+                + "ml drunk - streak "
+                + streak;
+
+            streakCell.style.color = "purple";
+
+            streakCell.style.fontWeight = "bold";
+        }        
 
         function drawGraph() {
 
@@ -185,6 +376,20 @@
             const graphHeight =
                 canvas.height - marginTop - marginBottom;
 
+            if (weightHistory.length < 2) {
+                return;
+            }                
+
+            // Dynamic scaling
+            const maxWeight =
+                Math.max(...weightHistory);
+
+            const minWeight =
+                Math.min(...weightHistory);
+
+            const range =
+                maxWeight - minWeight || 1;
+
             // Axes
             ctx.beginPath();
 
@@ -201,6 +406,84 @@
             );
 
             ctx.stroke();
+
+
+            // -----------------------------
+            // Y-axis ticks
+            // -----------------------------
+
+            ctx.font = "14px Arial";
+
+            const tickStep = 50;
+
+            const maxTick =
+                Math.ceil(maxWeight / tickStep) * tickStep;
+
+            const minTick =
+                Math.floor(minWeight / tickStep) * tickStep;
+
+            for (
+                let tick = minTick;
+                tick <= maxTick;
+                tick += tickStep
+            ) {
+
+                const y =
+                    canvas.height - marginBottom -
+                    ((tick - minWeight) / range)
+                    * graphHeight;
+
+                // Tick mark
+                ctx.beginPath();
+
+                ctx.moveTo(marginLeft - 10, y);
+
+                ctx.lineTo(marginLeft, y);
+
+                ctx.stroke();
+
+                // Tick label
+                ctx.fillText(
+                    tick + "ml",
+                    10,
+                    y + 5
+                );
+            }           
+            
+
+            // -----------------------------
+            // X-axis ticks
+            // -----------------------------
+
+            for (let i = 0; i <= 50; i += 10) {
+
+                const x =
+                    marginLeft +
+                    (i / 50) * graphWidth;
+
+                // Tick mark
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    x,
+                    canvas.height - marginBottom
+                );
+
+                ctx.lineTo(
+                    x,
+                    canvas.height - marginBottom + 10
+                );
+
+                ctx.stroke();
+
+                // Tick label
+                ctx.fillText(
+                    (50 - i) + "s",
+                    x - 10,
+                    canvas.height - marginBottom + 30
+                );
+            }            
+
 
             // Labels
             ctx.font = "20px Arial";
@@ -221,19 +504,9 @@
 
             ctx.restore();
 
-            if (weightHistory.length < 2) {
-                return;
-            }
 
-            // Dynamic scaling
-            const maxWeight =
-                Math.max(...weightHistory);
 
-            const minWeight =
-                Math.min(...weightHistory);
 
-            const range =
-                maxWeight - minWeight || 1;
 
             // Draw line
             for (let i = 1; i < weightHistory.length; i++) {

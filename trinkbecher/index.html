@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ESP32 Cup Dashboard</title>
+</head>
+
+<body>
+    <h1>ESP32 Cup Dashboard</h1>
+
+    <p>Weight: <span id="weight">0</span> g</p>
+    <p>Tilt: <span id="tilt">0</span> °</p>
+
+    <script>
+        async function updateData() {
+
+            const response = await fetch("/data");
+            const data = await response.json();
+
+            document.getElementById("weight").innerText = data.weight;
+            document.getElementById("tilt").innerText = data.tilt;
+        }
+
+        setInterval(updateData, 1000);
+
+        updateData();
+    </script>
+</body>
+</html>

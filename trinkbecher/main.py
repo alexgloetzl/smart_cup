@@ -1,34 +1,102 @@
 import network
 import socket
 import time
+import json
 
+# -----------------------------
+# Start WiFi Access Point
+# -----------------------------
 ap = network.WLAN(network.AP_IF)
+
 ap.active(True)
-ap.config(essid="ESP32-DASHBOARD", password="12345678")
+
+ap.config(
+    essid="ESP32-DASHBOARD",
+    password="12345678"
+)
 
 print("AP started")
 print(ap.ifconfig())
 
+# -----------------------------
+# Mock sensor values
+# -----------------------------
 mock_weight = 0.0
 mock_tilt = 45.0
 
+# -----------------------------
+# Load HTML file
+# -----------------------------
+with open("index.html", "r") as file:
+    html = file.read()
+
+# -----------------------------
+# Create socket server
+# -----------------------------
 addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+
 s = socket.socket()
 s.bind(addr)
-s.listen(1)
+s.listen(5)
 
+print("Server listening on port 80")
+
+# -----------------------------
+# Main loop
+# -----------------------------
 while True:
+
+    # Update mock sensor values
     mock_weight += 1.0
     mock_tilt -= 1.0
 
+    if mock_tilt < 0:
+        mock_tilt = 45
+
+    # Wait for client
     conn, addr = s.accept()
-    conn.recv(1024)
 
-    response = f"""HTTP/1.1 200 OK
+    print("Client connected:", addr)
 
-{{"weight": {mock_weight}, "tilt": {mock_tilt}}}
+    # request = conn.recv(1024).decode()
+    raw_request = conn.recv(1024)
+    print(raw_request)
+
+    request = raw_request.decode("utf-8", "ignore")    
+
+    # -----------------------------
+    # API endpoint
+    # -----------------------------
+    if "GET /data" in request:
+
+        data = {
+            "weight": mock_weight,
+            "tilt": mock_tilt
+        }
+
+        json_data = json.dumps(data)
+
+        response = f"""HTTP/1.1 200 OK
+Content-Type: application/json
+
+{json_data}
 """
-    conn.send(response)
+
+        conn.send(response)
+
+    # -----------------------------
+    # Main webpage
+    # -----------------------------
+    else:
+
+        response = f"""HTTP/1.1 200 OK
+Content-Type: text/html
+
+{html}
+"""
+
+        conn.send(response)
+
     conn.close()
 
-    time.sleep(1)
+    time.sleep(0.1)

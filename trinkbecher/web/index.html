@@ -41,10 +41,19 @@
                 const server = await device.gatt.connect();
 
                 console.log('Getting Service...');
-                const service = await server.getPrimaryService(0x181A);
+                const service = await server.getPrimaryService("12345678-1234-5678-1234-56789abcdef0");
 
                 console.log('Getting Characteristic...');
-                const characteristic = await service.getCharacteristic(0x2A56);
+                const characteristic = await service.getCharacteristic("12345678-1234-5678-1234-56789abcdef1");
+
+                await characteristic.startNotifications();
+
+                characteristic.addEventListener(
+                    'characteristicvaluechanged',
+                    handleDataChanged
+                );                
+
+                console.log("Connected + notifications started");
 
                 // Start receiving data notifications
                 await characteristic.startNotifications();

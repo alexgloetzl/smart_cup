@@ -1,0 +1,35 @@
+# micro controller: esp32-e  v1.0
+
+pip install esptool
+python -m esptool version
+# erase existing firmware on micro controller:
+python -m esptool --chip esp32 --port COM3 erase_flash
+python -m esptool --chip esp32 --port COM3 --baud 460800 write_flash -z 0x1000 ESP32_GENERIC-20260406-v1.28.0.bin
+
+
+pip install mpremote
+mpremote connect COM3 fs cp main.py :
+
+
+
+in index.html directory:
+python -m http.server 8000
+in browser:
+http://localhost:8000/
+
+
+
+
+{
+    "address": "COM3",
+    "open_on_start": true
+}
+
+
+ESP32 (MicroPython BLE)
+        ↓
+Bluetooth LE notifications
+        ↓
+Chrome Web Bluetooth API
+        ↓
+index.html dashboard UI

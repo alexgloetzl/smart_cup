@@ -42,7 +42,8 @@ blue_led.freq(1000)
 i2c = I2C(
     0,
     scl=Pin(22),
-    sda=Pin(21)
+    sda=Pin(21),
+    freq=100000
 )
 
 # print(i2c.scan())
@@ -83,25 +84,33 @@ def to_signed(val):
 
 def read_magnetometer():
 
-    data = i2c.readfrom_mem(
-        GY271_ADDR,
-        0x00,
-        6
-    )
+    try:
 
-    x = to_signed(
-        int.from_bytes(data[0:2], 'little')
-    )
+        data = i2c.readfrom_mem(
+            GY271_ADDR,
+            0x00,
+            6
+        )
 
-    y = to_signed(
-        int.from_bytes(data[2:4], 'little')
-    )
+        x = to_signed(
+            int.from_bytes(data[0:2], 'little')
+        )
 
-    z = to_signed(
-        int.from_bytes(data[4:6], 'little')
-    )
+        y = to_signed(
+            int.from_bytes(data[2:4], 'little')
+        )
 
-    return x, y, z
+        z = to_signed(
+            int.from_bytes(data[4:6], 'little')
+        )
+
+        return x, y, z
+
+    except OSError as e:
+
+        print("I2C read error:", e)
+
+        return 0, 0, 1
 
 # -----------------------------
 # Load HTML file

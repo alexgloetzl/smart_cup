@@ -117,6 +117,7 @@ addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
 s = socket.socket()
 s.bind(addr)
 s.listen(5)
+s.settimeout(0.1)
 
 print("Server listening on port 80")
 
@@ -202,51 +203,56 @@ while True:
     print(f"red: {red}, green: {green}, blue: {blue}")
 
     # Wait for client
-    conn, addr = s.accept()
+    try:
+        conn, addr = s.accept()
+    except OSError:
+        conn = None
 
-    print("Client connected:", addr)
+    if conn:
 
-    # request = conn.recv(1024).decode()
-    raw_request = conn.recv(1024)
-    # print(raw_request)
+        print("Client connected:", addr)
 
-    request = raw_request.decode("utf-8", "ignore")    
+        # request = conn.recv(1024).decode()
+        raw_request = conn.recv(1024)
+        # print(raw_request)
 
-    # -----------------------------
-    # API endpoint
-    # -----------------------------
-    if "GET /data" in request:
+        request = raw_request.decode("utf-8", "ignore")    
 
-        data = {
-            "weight": mock_weight,
-            "tilt": mock_tilt
-        }
+        # -----------------------------
+        # API endpoint
+        # -----------------------------
+        if "GET /data" in request:
 
-        print(f"mock weight: {mock_weight}, mock tilt: {mock_tilt}")
+            data = {
+                "weight": mock_weight,
+                "tilt": mock_tilt
+            }
 
-        json_data = json.dumps(data)
+            print(f"mock weight: {mock_weight}, mock tilt: {mock_tilt}")
 
-        response = f"""HTTP/1.1 200 OK
-                    Content-Type: application/json
+            json_data = json.dumps(data)
 
-                    {json_data}
-                    """
+            response = f"""HTTP/1.1 200 OK
+                        Content-Type: application/json
 
-        conn.send(response)
+                        {json_data}
+                        """
 
-    # -----------------------------
-    # Main webpage
-    # -----------------------------
-    else:
+            conn.send(response)
 
-        response = f"""HTTP/1.1 200 OK
-                    Content-Type: text/html
+        # -----------------------------
+        # Main webpage
+        # -----------------------------
+        else:
 
-                    {html}
-                    """
+            response = f"""HTTP/1.1 200 OK
+                        Content-Type: text/html
 
-        conn.send(response)
+                        {html}
+                        """
 
-    conn.close()
+            conn.send(response)
+
+        conn.close()
 
     time.sleep(0.1)

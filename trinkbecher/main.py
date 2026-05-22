@@ -209,7 +209,7 @@ while True:
     blue = 0
 
     set_color(red, green, blue)
-    print(f"red: {red}, green: {green}, blue: {blue}")
+    # print(f"red: {red}, green: {green}, blue: {blue}")
 
     # Wait for client
     try:
@@ -237,7 +237,7 @@ while True:
                 "tilt": mock_tilt
             }
 
-            print(f"mock weight: {mock_weight}, mock tilt: {mock_tilt}")
+            # print(f"mock weight: {mock_weight}, mock tilt: {mock_tilt}")
 
             json_data = json.dumps(data)
 

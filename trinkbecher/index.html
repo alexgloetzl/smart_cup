@@ -12,13 +12,18 @@
     <p>Weight: <span id="weight">0</span> g</p>
     <p>Tilt: <span id="tilt">0</span> °</p>
 
-    <canvas id="graph" width="400" height="200"
+    <canvas
+        id="graph"
+        width="800"
+        height="400"
         style="border:1px solid black;">
     </canvas>
 
     <script>
 
         const weightHistory = [];
+
+        let lastStableWeight = 0;
 
         const canvas = document.getElementById("graph");
         const ctx = canvas.getContext("2d");
@@ -31,10 +36,27 @@
             document.getElementById("weight").innerText = data.weight;
             document.getElementById("tilt").innerText = data.tilt;
 
-            // Store weight history
-            weightHistory.push(data.weight);
+            let graphWeight;
 
-            // Keep only last 50 values
+            // Drinking mode detection
+            if (data.weight <= 0) {
+
+                // Keep previous stable weight
+                graphWeight = lastStableWeight;
+
+            } else {
+
+                // Normal mode
+                graphWeight = data.weight;
+
+                // Save latest stable value
+                lastStableWeight = data.weight;
+            }
+
+            // Add graph value
+            weightHistory.push(graphWeight);
+
+            // Keep only latest 50 values
             if (weightHistory.length > 50) {
                 weightHistory.shift();
             }
@@ -46,25 +68,90 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Graph margins
+            const marginLeft = 80;
+            const marginBottom = 60;
+            const marginTop = 20;
+            const marginRight = 20;
+
+            const graphWidth =
+                canvas.width - marginLeft - marginRight;
+
+            const graphHeight =
+                canvas.height - marginTop - marginBottom;
+
+            // Draw axes
+            ctx.beginPath();
+
+            // Y-axis
+            ctx.moveTo(marginLeft, marginTop);
+            ctx.lineTo(marginLeft, canvas.height - marginBottom);
+
+            // X-axis
+            ctx.lineTo(
+                canvas.width - marginRight,
+                canvas.height - marginBottom
+            );
+
+            ctx.stroke();
+
+            // Axis labels
+            ctx.font = "20px Arial";
+
+            // X-axis label
+            ctx.fillText(
+                "Time",
+                canvas.width / 2,
+                canvas.height - 15
+            );
+
+            // Y-axis label
+            ctx.save();
+
+            ctx.translate(25, canvas.height / 2);
+
+            ctx.rotate(-Math.PI / 2);
+
+            ctx.fillText("Water Weight", 0, 0);
+
+            ctx.restore();
+
             if (weightHistory.length < 2) {
                 return;
             }
 
+            // Dynamic scaling
             const maxWeight = Math.max(...weightHistory);
+            const minWeight = Math.min(...weightHistory);
 
+            const range = maxWeight - minWeight || 1;
+
+            // Draw graph line
             for (let i = 1; i < weightHistory.length; i++) {
 
-                const x1 = (i - 1) * (canvas.width / 50);
-                const y1 = canvas.height -
-                    (weightHistory[i - 1] / maxWeight) * canvas.height;
+                const x1 =
+                    marginLeft +
+                    ((i - 1) / 49) * graphWidth;
 
-                const x2 = i * (canvas.width / 50);
-                const y2 = canvas.height -
-                    (weightHistory[i] / maxWeight) * canvas.height;
+                const y1 =
+                    canvas.height - marginBottom -
+                    ((weightHistory[i - 1] - minWeight) / range)
+                    * graphHeight;
+
+                const x2 =
+                    marginLeft +
+                    (i / 49) * graphWidth;
+
+                const y2 =
+                    canvas.height - marginBottom -
+                    ((weightHistory[i] - minWeight) / range)
+                    * graphHeight;
 
                 ctx.beginPath();
+
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
+
                 ctx.stroke();
             }
         }

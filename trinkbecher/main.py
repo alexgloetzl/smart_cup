@@ -13,7 +13,8 @@ ap.active(True)
 
 ap.config(
     essid="ESP32-DASHBOARD",
-    password="12345678"
+    password="12345678",
+    authmode=network.AUTH_WPA_WPA2_PSK
 )
 
 print("AP started")
@@ -22,7 +23,7 @@ print(ap.ifconfig())
 # -----------------------------
 # Mock sensor values
 # -----------------------------
-mock_weight = 0.0
+mock_weight = 50.0
 mock_tilt = 45.0
 
 # -----------------------------
@@ -85,10 +86,10 @@ while True:
         json_data = json.dumps(data)
 
         response = f"""HTTP/1.1 200 OK
-Content-Type: application/json
+                    Content-Type: application/json
 
-{json_data}
-"""
+                    {json_data}
+                    """
 
         conn.send(response)
 
@@ -98,10 +99,10 @@ Content-Type: application/json
     else:
 
         response = f"""HTTP/1.1 200 OK
-Content-Type: text/html
+                    Content-Type: text/html
 
-{html}
-"""
+                    {html}
+                    """
 
         conn.send(response)
 

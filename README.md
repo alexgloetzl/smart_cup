@@ -67,12 +67,6 @@ A real-time smart hydration monitoring system built with a micro controller ESP3
 pip install esptool
 ```
 
-Check installation:
-
-```bash
-python -m esptool version
-```
-
 ---
 
 ### 2. Erase Existing ESP32 Firmware
@@ -136,7 +130,7 @@ Password:
 In browser:
 
 ```text
-http://192.168.4.1
+http://192.168.4.1 (not https://)
 ```
 
 ---

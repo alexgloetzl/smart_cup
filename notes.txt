@@ -1,5 +1,6 @@
 # micro controller: esp32-e  v1.0
 
+# Installation process:
 pip install esptool
 python -m esptool version
 # erase existing firmware on micro controller:

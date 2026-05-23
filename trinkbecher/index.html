@@ -202,7 +202,17 @@
             }
         ];
 
-          
+
+        let streakColorIndex = 0;
+
+        const streakColors = [
+            "purple",
+            "blue",
+            "green",
+            "orange",
+            "red",
+            "brown"
+        ];
 
         async function updateData() {
 
@@ -364,8 +374,13 @@
 
                 } else {
 
+                    // New streak sequence next time
+                    if (drinkingStreak > 0) {
+                        streakColorIndex += 1;
+                    }
+
                     drinkingStreak = 0;
-                }
+                }                
 
                 // Reset window
                 hourlyDrunkAmount = 0;
@@ -494,7 +509,11 @@
                 + "ml drunk) "
                 + smiley;         
 
-            streakCell.style.color = "purple";
+            streakCell.style.color =
+                streakColors[
+                    streakColorIndex
+                    % streakColors.length
+                ];
 
             streakCell.style.fontWeight = "bold";
 

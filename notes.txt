@@ -111,3 +111,7 @@ except OSError:
 
 
 https://chatgpt.com/share/6a10c208-c4a0-83eb-937e-b0287c01ce4e
+
+Important note
+GPIO12 can sometimes cause ESP32 boot problems because it is a strapping pin.
+If ESP32 fails to boot later, move SCK from GPIO12 to something safer like:

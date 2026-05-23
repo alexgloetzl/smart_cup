@@ -7,6 +7,9 @@ import random
 from machine import Pin, PWM, I2C
 import math
 
+# d12 - gpio4 -> data
+# sck d13 gpio12
+
 # -----------------------------
 # Start WiFi Access Point
 # -----------------------------
@@ -36,7 +39,7 @@ green_led.freq(1000)
 blue_led.freq(1000)
 
 # -----------------------------
-# I2C setup
+# I2C setup - gyro/tilt sensor
 # -----------------------------
 
 i2c = I2C(
@@ -59,9 +62,21 @@ i2c.writeto_mem(
 )
 
 # -----------------------------
+# HX711 setup - weight sensor
+# -----------------------------
+
+HX711_DATA_PIN = 4
+HX711_CLOCK_PIN = 18 # evtl. 18 weil 12 is "strapping pin"
+
+hx_data = Pin(HX711_DATA_PIN, Pin.IN)
+hx_clock = Pin(HX711_CLOCK_PIN, Pin.OUT)
+
+hx_clock.value(0)
+
+# -----------------------------
 # Mock sensor values
 # -----------------------------
-mock_weight = 50.0
+# mock_weight = 50.0
 # mock_tilt = 45.0
 
 def set_color(r, g, b):
@@ -112,6 +127,47 @@ def read_magnetometer():
 
         return 0, 0, 1
 
+
+# -----------------------------
+# Read HX711
+# -----------------------------
+
+def read_hx711():
+
+    # Wait until HX711 is ready
+    while hx_data.value() == 1:
+        pass
+
+    value = 0
+
+    for _ in range(24):
+
+        hx_clock.value(1)
+
+        value = value << 1
+
+        hx_clock.value(0)
+
+        if hx_data.value():
+            value += 1
+
+    # Set gain to 128
+    hx_clock.value(1)
+    hx_clock.value(0)
+
+    # Convert to signed 24-bit
+    if value & 0x800000:
+        value |= ~0xFFFFFF
+
+    return value   
+
+# -----------------------------
+# HX711 calibration
+# -----------------------------
+
+HX711_OFFSET = 0
+HX711_SCALE = 1000 
+
 # -----------------------------
 # Load HTML file
 # -----------------------------
@@ -135,14 +191,28 @@ print("Server listening on port 80")
 # -----------------------------
 while True:
 
-    # Update mock sensor values
-    sample = random.uniform(0, 1)
-    drunk_water = random.choice([20, 50])
-    if sample < 0.8:
-        mock_weight -= drunk_water
-        mock_weight = max(mock_weight, 0)
-    else:
-        mock_weight += 2*drunk_water
+    # # Update mock sensor values
+    # sample = random.uniform(0, 1)
+    # drunk_water = random.choice([20, 50])
+    # if sample < 0.8:
+    #     mock_weight -= drunk_water
+    #     mock_weight = max(mock_weight, 0)
+    # else:
+    #     mock_weight += 2*drunk_water
+
+    # -----------------------------
+    # Read HX711 weight
+    # -----------------------------
+    raw_weight = read_hx711()
+    mock_weight = (
+        raw_weight - HX711_OFFSET
+    ) / HX711_SCALE
+    print(
+        "raw hx711:",
+        raw_weight,
+        "weight:",
+        mock_weight
+    )    
 
     # mock_tilt = 30.0
     # alert = random.uniform(0,1)

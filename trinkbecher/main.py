@@ -138,11 +138,11 @@ while True:
     # Update mock sensor values
     sample = random.uniform(0, 1)
     drunk_water = random.choice([20, 50])
-    if sample < 0.7:
+    if sample < 0.8:
         mock_weight -= drunk_water
         mock_weight = max(mock_weight, 0)
     else:
-        mock_weight += 5*drunk_water
+        mock_weight += 2*drunk_water
 
     # mock_tilt = 30.0
     # alert = random.uniform(0,1)

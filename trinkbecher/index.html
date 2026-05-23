@@ -214,7 +214,7 @@
                 data.weight;
 
             document.getElementById("tilt").innerText =
-               data.tilt;
+                Number(data.tilt).toFixed(2);
 
             // -----------------------------
             // Drinking mode
@@ -353,7 +353,7 @@
                         document.getElementById(
                             "highestStreakDisplay"
                         ).innerText =
-                            "Highest Streak: "
+                            "Highest Drinking Streak: "
                             + highestStreak;
                     }
 
@@ -475,12 +475,24 @@
                 smiley = ":D :D";
             }
 
+            if (streak >= 6) {
+                smiley = ":D :D :D";
+            }            
+
+            // streakCell.innerText =
+            //     Math.round(amount)
+            //     + "ml drunk - streak "
+            //     + streak
+            //     + " "
+            //     + smiley;
+
             streakCell.innerText =
-                Math.round(amount)
-                + "ml drunk - streak "
+                "Streak "
                 + streak
-                + " "
-                + smiley;
+                + " ("
+                + Math.round(amount)
+                + "ml drunk) "
+                + smiley;         
 
             streakCell.style.color = "purple";
 
@@ -608,7 +620,7 @@
                         "bold";
 
                     msg.innerText =
-                        "GOAL REACHED! :)";
+                        "DAILY GOAL REACHED!";
 
                     wrapper.appendChild(msg);
                 }
@@ -626,7 +638,7 @@
                 canvas.height
             );
 
-            const marginLeft = 80;
+            const marginLeft = 110;
             const marginBottom = 60;
             const marginTop = 20;
             const marginRight = 20;
@@ -675,7 +687,7 @@
 
             ctx.font = "14px Arial";
 
-            const tickStep = 50;
+            const tickStep = 100;
 
             const maxTick =
                 Math.ceil(maxWeight / tickStep) * tickStep;
@@ -703,10 +715,9 @@
 
                 ctx.stroke();
 
-                // Tick label
                 ctx.fillText(
                     tick + "ml",
-                    10,
+                    marginLeft - 60,
                     y + 5
                 );
             }           

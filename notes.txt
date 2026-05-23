@@ -107,3 +107,7 @@ try:
     conn, addr = s.accept()
 except OSError:
     conn = None
+
+
+
+https://chatgpt.com/share/6a10c208-c4a0-83eb-937e-b0287c01ce4e

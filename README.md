@@ -22,17 +22,15 @@ We implemented these features in a modular and low-cost design based primarily o
 
 ## Final Prototype
 
-<div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:nowrap;">
-  
+<div style="display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:nowrap;">
+
   <a href="https://youtube.com/shorts/64QTJWFIxZ4?feature=share">
     <img src="./media/thumbnail.png"
-         alt="Prototype demo"
-         style="height:120px;" />
+         style="height:200px; border-radius:10px;" />
   </a>
-
-  <img src="./media/website.png" alt="Website Screenshot" style="height:120px;" />
-  <img src="./media/CAD_explosion.png" alt="CAD explosion" style="height:120px;" />
-  <img src="./media/ESP32.jpg" alt="ESP32" style="height:120px;" />
+  <img src="./media/website.png" style="height:200px; border-radius:10px;" />
+  <img src="./media/CAD_explosion.png" style="height:200px; border-radius:10px;" />
+  <img src="./media/ESP32.jpg" style="height:200px; border-radius:10px;" />
 
 </div>
 

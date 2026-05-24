@@ -22,12 +22,19 @@ We implemented these features in a modular and low-cost design based primarily o
 
 ## Final Prototype
 
-<p align="center">
-  <video src="./media/demo.mp4" controls width="24%" style="vertical-align: middle;"></video>
-  <img src="./media/website.png" alt="Website Screenshot" width="24%" style="vertical-align: middle;"/>
-  <img src="./media/CAD_explosion.png" alt="CAD_explosion_drawing" width="24%" style="vertical-align: middle;"/>
-  <img src="./media/ESP32.jpg" alt="ESP32 micro controller" width="24%" style="vertical-align: middle;"/>
-</p>
+<div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:nowrap;">
+  
+  <a href="https://youtube.com/shorts/64QTJWFIxZ4?feature=share">
+    <img src="./media/thumbnail.png"
+         alt="Prototype demo"
+         style="height:120px;" />
+  </a>
+
+  <img src="./media/website.png" alt="Website Screenshot" style="height:120px;" />
+  <img src="./media/CAD_explosion.png" alt="CAD explosion" style="height:120px;" />
+  <img src="./media/ESP32.jpg" alt="ESP32" style="height:120px;" />
+
+</div>
 
 ---
 

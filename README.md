@@ -1,4 +1,10 @@
-# Smart Cup
+# Smart Cup for Healthcare Hackathon 2026
+
+## Contributors
+
+- [@phil](?) — Hardware Architecture, CAD design and 3D printing
+- [@alex](https://github.com/alexgloetzl) — Embedded Software & Web Interface
+
 ## Motivation
 
 Around 5 million people in Germany suffer from swallowing disorders. Therefore, there is a strong need for a smart drinking cup that supports patients during hydration.
@@ -13,9 +19,29 @@ We implemented these features in a modular and low-cost design based primarily o
 
 ---
 
-## Hardware Components
 
-A real-time smart hydration monitoring system built with a micro controller ESP32, HX711 load cell amplifier, QMC5883L (GY271) tilt sensor, RGB LED feedback, and a browser-based dashboard.
+## Final Prototype
+
+<p align="center">
+  <video src="./media/demo.mp4" controls width="24%" style="vertical-align: middle;"></video>
+  <img src="./media/website.png" alt="Website Screenshot" width="24%" style="vertical-align: middle;"/>
+  <img src="./media/CAD_explosion.png" alt="CAD_explosion_drawing" width="24%" style="vertical-align: middle;"/>
+  <img src="./media/ESP32.jpg" alt="ESP32 micro controller" width="24%" style="vertical-align: middle;"/>
+</p>
+
+---
+
+## Real-Time Metrics
+
+Displays:
+
+* Current weight
+* Current tilt angle
+* Highest streak
+
+---
+
+## Hardware Components
 
 | Component        | Purpose              |
 | ---------------- | -------------------- |
@@ -59,45 +85,22 @@ A real-time smart hydration monitoring system built with a micro controller ESP3
 
 ## Installation Process
 
----
-
-### 1. Install esptool
+### 1. Erase Existing ESP32 Firmware & Flash MicroPython Firmware
 
 ```bash
 pip install esptool
-```
-
----
-
-### 2. Erase Existing ESP32 Firmware
-
-```bash
 python -m esptool --chip esp32 --port COM3 erase_flash
-```
-
----
-
-### 3. Flash MicroPython Firmware
-
-```bash
 python -m esptool --chip esp32 --port COM3 --baud 460800 write_flash -z 0x1000 ESP32_GENERIC-20260406-v1.28.0.bin
 ```
 
 ---
 
-### 4. Install mpremote
-
-```bash
-pip install mpremote
-```
-
----
-
-### 5. Upload Files to ESP32
+### 2. Upload Files to ESP32
 
 Upload `main.py` and `index.html`:
 
 ```bash
+pip install mpremote
 python -m mpremote connect COM3 fs cp main.py :
 python -m mpremote connect COM3 fs cp index.html :
 ```
@@ -105,45 +108,20 @@ python -m mpremote connect COM3 fs cp index.html :
 ---
 
 
-## WiFi Setup
+## How to access Dashboard
 
-The ESP32 acts as a WiFi access point.
+Flash both the main.py and index.html. Reset the micro controller manually with the "Reset" button. <br>
+The ESP32 acts as a WiFi access point. Connect to the WiFi in your browser http://192.162.4.1 (not https://)
 
-### WiFi Credentials
-
-SSID:
-
+WLAN-SSID:
 ```text
 ESP32-DASHBOARD
 ```
 
-Password:
-
+WLAN-Password:
 ```text
 12345678
 ```
-
----
-
-### Open Dashboard
-
-In browser:
-
-```text
-http://192.168.4.1 (not https://)
-```
-
----
-
-## Dashboard Features
-
-### Real-Time Metrics
-
-Displays:
-
-* Current weight
-* Current tilt angle
-* Highest streak
 
 ---
 
@@ -164,23 +142,3 @@ smarter_trinkbecher/
 ├── index.html
 └── README.md
 ```
-
----
-
-## Future Improvements
-
-Potential future upgrades:
-
-* Cloud synchronization
-* Mobile notifications
-* Battery power support
-* OLED display
-* Temperature sensing
-* Persistent data storage
-* Machine learning hydration analysis
-
----
-
-## License
-
-Open-source project for educational and personal use.

@@ -2,7 +2,7 @@
 
 ## Contributors
 
-- [@phil](?) — Hardware Architecture, CAD design and 3D printing
+- [@phil](https://github.com/githp806) — Hardware Architecture, CAD design and 3D printing
 - [@alex](https://github.com/alexgloetzl) — Embedded Software & Web Interface
 
 ## Motivation
@@ -88,7 +88,7 @@ Displays:
 
 ---
 
-## Installation Process
+## Installation & Flashing Process
 
 ### 1. Erase Existing ESP32 Firmware & Flash MicroPython Firmware
 
@@ -102,7 +102,7 @@ python -m esptool --chip esp32 --port COM3 --baud 460800 write_flash -z 0x1000 E
 
 ### 2. Upload Files to ESP32
 
-Upload `main.py` and `index.html`:
+Upload `main.py` and `index.html`. Here the micro controller was connected to the port COM3:
 
 ```bash
 pip install mpremote
@@ -115,8 +115,8 @@ python -m mpremote connect COM3 fs cp index.html :
 
 ## How to access Dashboard
 
-Flash both the main.py and index.html. Reset the micro controller manually with the "Reset" button. <br>
-The ESP32 acts as a WiFi access point. Connect to the WiFi in your browser http://192.162.4.1 (not https://)
+Flash both the main.py and index.html. Connect to micro controller with the vscode extension "PyMakr". Reset the micro controller manually with the "Reset" button.<br>
+The ESP32 now acts as a WiFi access point. Connect to the WiFi in your browser http://192.162.4.1 (not https://)
 
 WLAN-SSID:
 ```text

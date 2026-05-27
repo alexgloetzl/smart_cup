@@ -23,17 +23,15 @@ We implemented these features in a modular and low-cost design based primarily o
 ## Final Prototype
 
 <div style="display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:nowrap;">
-  <div style="position:relative;">
-    <a href="https://youtube.com/shorts/64QTJWFIxZ4?feature=share" style="text-decoration:none;">
-      <img src="./media/thumbnail.png" alt="Watch Video" style="height:200px; border-radius:10px; display:block;" />
-      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:64px; height:64px; background:rgba(0,0,0,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-      </div>
-    </a>
-  </div>
+
+  <a href="https://youtube.com/shorts/64QTJWFIxZ4?feature=share">
+    <img src="./media/thumbnail_with_play_button.png"
+         style="height:200px; border-radius:10px;" />
+  </a>
   <img src="./media/website.png" style="height:200px; border-radius:10px;" />
   <img src="./media/CAD_explosion.png" style="height:200px; border-radius:10px;" />
   <img src="./media/ESP32.jpg" style="height:200px; border-radius:10px;" />
+
 </div>
 
 ---
